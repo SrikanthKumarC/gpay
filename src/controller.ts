@@ -68,6 +68,12 @@ const transferMoney = async (req: Request, res: Response) => {
       cashback: cashbackMessage,
     });
   } catch (e: any) {
+    if (!e.issues) {
+      return res.status(500).json({
+        message: "Error transferring money",
+        error: e.message,
+      });
+    }
     res.status(400).json({
       message: "Error transferring money",
       // also include the path of the error
