@@ -23,5 +23,5 @@ app.post("/create-user", createUser);
 app.post("/transfer-money", transferMoney)
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`GPay app listening at http://localhost:${port}`);
 });
