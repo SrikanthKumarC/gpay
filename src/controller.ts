@@ -85,4 +85,20 @@ const transferMoney = async (req: Request, res: Response) => {
   }
 };
 
-export default { createUser, transferMoney };
+const getTransactions = async (req: Request, res: Response) => {
+  const { phoneNumber } = req.params;
+  console.log(phoneNumber);
+  const transactions = await Transaction.find({
+    $or: [
+      { senderPhoneNumber: phoneNumber },
+      { receiverPhoneNumber: phoneNumber },
+    ],
+  });
+  res.json({
+    transactions,
+  });
+}
+
+
+
+export default { createUser, transferMoney, getTransactions };
