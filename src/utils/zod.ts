@@ -10,6 +10,15 @@ const phoneNumberSchema = (fieldName: string) =>
       message: `${fieldName} must contain only numeric characters`,
     });
 
+const phoneNumberValidator = z
+.string()
+.trim()
+.min(10, { message: `Phone number must be 10 digits` })
+.max(10, { message: `Phone number must be 10 digits` })
+.refine((value) => /^\d+$/.test(value), {
+  message: `Phone number must contain only numeric characters`,
+});
+
 const createUserSchema = z.object({
   phoneNumber: phoneNumberSchema("Phone number"),
   availableCash: z.number().min(0, { message: "Amount cannot be negative" }),
@@ -24,4 +33,4 @@ const transferMoneySchema = z.object({
 export type CreateUserSchemaType = z.infer<typeof createUserSchema>;
 export type TransferMoneySchemaType = z.infer<typeof transferMoneySchema>;
 
-export default { createUserSchema, transferMoneySchema };
+export default { createUserSchema, transferMoneySchema, phoneNumberValidator };

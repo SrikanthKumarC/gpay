@@ -2,8 +2,29 @@ import User from "./models/User";
 import Transaction from "./models/Transaction";
 import { Request, Response } from "express";
 import zod from "./utils/zod";
-const { createUserSchema, transferMoneySchema } = zod;
+const { createUserSchema, transferMoneySchema, phoneNumberValidator } = zod;
 import { calculateCashback } from "./utils/utils";
+
+const isNewUser = async (req: Request, res: Response) => {
+  try {
+    const phoneNumber = phoneNumberValidator.parse(req.params.phoneNumber);
+    console.log(phoneNumber);
+    const user = await User.findOne({ phoneNumber });
+    if (user) {
+      return res.json({
+        isNewUser: false,
+      });
+    }
+    return res.json({
+      isNewUser: true,
+    });
+  } catch (e: any) {
+    res.status(400).json({
+      message: "Error occurred while checking if user is new",
+      error: e.issues.map((issue: any) => issue.message),
+    });
+  }
+}
 
 const createUser = async (req: Request, res: Response) => {
   try {
@@ -86,19 +107,50 @@ const transferMoney = async (req: Request, res: Response) => {
 };
 
 const getTransactions = async (req: Request, res: Response) => {
-  const { phoneNumber } = req.params;
-  console.log(phoneNumber);
-  const transactions = await Transaction.find({
-    $or: [
-      { senderPhoneNumber: phoneNumber },
-      { receiverPhoneNumber: phoneNumber },
-    ],
-  });
-  res.json({
-    transactions,
-  });
+  try {
+    const phoneNumber = phoneNumberValidator.parse(req.params.phoneNumber);
+    const phoneNumberExists = await User.exists({ phoneNumber });
+    if (!phoneNumberExists) {
+      return res.status(404).json({
+        message: "Given phone number is not registered",
+      });
+    }
+    console.log(phoneNumber);
+    const transactions = await Transaction.find({
+      $or: [
+        { senderPhoneNumber: phoneNumber },
+        { receiverPhoneNumber: phoneNumber },
+      ],
+    });
+    res.json({
+      transactions,
+    });
+  }catch (e: any) {
+    res.status(400).json({
+      message: "Error occurred while fetching transactions",
+      error: e.issues.map((issue: any) => issue.message),
+    });
+  }
 }
 
+const getUser = async (req: Request, res: Response) => {
+  try {
+    const phoneNumber = phoneNumberValidator.parse(req.params.phoneNumber);
+    const userDetails = await User.findOne({ phoneNumber });
+    if (!userDetails) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    res.json({
+      userDetails,
+    });
+  } catch (e: any) {
+    res.status(400).json({
+      message: "Error occurred while fetching user details",
+      error: e.issues.map((issue: any) => issue.message),
+    });
+  }
+}
 
-
-export default { createUser, transferMoney, getTransactions };
+export default { createUser, transferMoney, isNewUser, getTransactions, getUser };
