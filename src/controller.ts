@@ -53,6 +53,11 @@ const transferMoney = async (req: Request, res: Response) => {
   try {
     const parsedBody = transferMoneySchema.parse(req.body);
     const { from, to, amount } = parsedBody;
+    if (from === to) {
+      return res.status(400).json({
+        message: "Sender and receiver cannot be the same",
+      });
+    }
     const sender = await User.findOne({ phoneNumber: from });
     if (!sender) {
       return res.status(404).json({
@@ -62,7 +67,7 @@ const transferMoney = async (req: Request, res: Response) => {
     const receiver = await User.findOne({ phoneNumber: to });
     if (!receiver) {
       return res.status(404).json({
-        message: "Receiver not found",
+        message: "Receiver not found, create a user with the receiver phone number first",
       });
     }
     if (sender.availableCash < amount) {

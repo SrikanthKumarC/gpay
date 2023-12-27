@@ -4,6 +4,7 @@ import controller from "./controller";
 const { createUser, transferMoney, getTransactions, isNewUser, getUser} = controller;
 import dotenv from "dotenv";
 import bodyParser from "body-parser";
+import cors from "cors";
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ dbConnection();
 const app:Express = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(bodyParser.json());
 
 app.get("/", (req: Request, res: Response) => {
